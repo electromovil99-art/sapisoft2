@@ -1,2 +1,10 @@
-// This file is a duplicate of index.tsx and is not required for the application to run.
-// It can be safely deleted from the project.
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css'; // Asegúrate de tener este archivo o bórralo si te da error
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
