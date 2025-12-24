@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
@@ -482,7 +481,6 @@ const App: React.FC = () => {
           token: 'session_active',
           baseCurrency: tenant?.baseCurrency || 'PEN' 
       });
-      // REDIRECCIÓN INTELIGENTE SEGÚN ROL
       if (u.role === 'SUPER_ADMIN') {
           setCurrentView(ViewState.SUPER_ADMIN_DASHBOARD);
       } else {
@@ -492,8 +490,58 @@ const App: React.FC = () => {
 
   return (
     <div className={`flex flex-col h-screen w-full bg-[#f8fafc] dark:bg-[#020617] overflow-hidden transition-colors duration-300 font-sans ${isDarkMode ? 'dark' : ''}`}>
-      <Layout companyName={session.businessName} companyLogo={companyLogo} navStructure={navStructure} currentView={currentView} onNavigate={v => { setWsContact(undefined); setCurrentView(v); }} isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} session={session} onLogout={() => setSession(null)} isSyncEnabled={isSyncEnabled} toggleSyncMode={() => setIsSyncEnabled(!isSyncEnabled)}>
-        {renderCurrentView()}
+      <Layout 
+        companyName={session.businessName} 
+        companyLogo={companyLogo} 
+        navStructure={navStructure} 
+        currentView={currentView} 
+        onNavigate={v => { setWsContact(undefined); setCurrentView(v); }} 
+        isDarkMode={isDarkMode} 
+        toggleTheme={() => setIsDarkMode(!isDarkMode)} 
+        session={session} 
+        onLogout={() => setSession(null)} 
+        isSyncEnabled={isSyncEnabled} 
+        toggleSyncMode={() => setIsSyncEnabled(!isSyncEnabled)}
+      >
+        <div className="flex-1 overflow-y-auto flex flex-col">
+          <div className="flex-1">
+            {renderCurrentView()}
+          </div>
+
+          {/* ----- PIE DE PÁGINA OBLIGATORIO PARA PADDLE ----- */}
+          <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-8 mt-10">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                
+                {/* Branding */}
+                <div className="text-center md:text-left">
+                  <h4 className="font-bold text-[#9333ea]">SapiSoft Cloud ERP</h4>
+                  <p className="text-xs text-gray-500 mt-1">© 2025 Todos los derechos reservados.</p>
+                </div>
+
+                {/* Contacto y Garantía (VITAL PARA PADDLE) */}
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-blue-600 underline">Soporte: electromovil99@gmail.com</p>
+                  <p className="text-sm font-bold text-green-600 mt-1">✓ Garantía de reembolso total de 7 días</p>
+                </div>
+
+                {/* Métodos de Pago */}
+                <div className="flex items-center space-x-4 grayscale opacity-60">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4" />
+                </div>
+              </div>
+
+              {/* Enlaces Legales Rápidos */}
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-center space-x-6 text-xs text-gray-400 font-medium">
+                <button onClick={() => alert("Términos: El uso de SapiSoft implica la aceptación de nuestras políticas de procesamiento de datos.")} className="hover:text-[#9333ea] hover:underline transition-colors">Términos de Servicio</button>
+                <button onClick={() => alert("Privacidad: Sus datos comerciales están protegidos bajo cifrado de extremo a extremo.")} className="hover:text-[#9333ea] hover:underline transition-colors">Política de Privacidad</button>
+              </div>
+            </div>
+          </footer>
+          {/* ----- FIN DEL PIE DE PÁGINA ----- */}
+        </div>
       </Layout>
     </div>
   );
