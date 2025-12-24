@@ -470,7 +470,7 @@ const App: React.FC = () => {
 
       default: 
         return <Dashboard onNavigate={setCurrentView} session={session} cashMovements={cashMovements} clients={clients} services={services} products={products} navStructure={navStructure} />;
-    }
+    } // Aquí termina el "default switch case"
   };
 
   if (!session) return <LoginScreen onLogin={u => {
@@ -488,6 +488,7 @@ const App: React.FC = () => {
       }
   }} users={systemUsers} tenants={tenants} heroImage={heroImage} featureImage={featureImage} />;
 
+  // Aquí empieza el return principal que dibuja la web
   return (
     <div className={`flex flex-col h-screen w-full bg-[#f8fafc] dark:bg-[#020617] overflow-hidden transition-colors duration-300 font-sans ${isDarkMode ? 'dark' : ''}`}>
       <Layout 
@@ -503,44 +504,53 @@ const App: React.FC = () => {
         isSyncEnabled={isSyncEnabled} 
         toggleSyncMode={() => setIsSyncEnabled(!isSyncEnabled)}
       >
+        {/* Contenedor flexible para el contenido y el footer */}
         <div className="flex-1 overflow-y-auto flex flex-col">
+          
+          {/* Aquí se dibuja el ERP */}
           <div className="flex-1">
             {renderCurrentView()}
           </div>
 
-          {/* ----- PIE DE PÁGINA OBLIGATORIO PARA PADDLE ----- */}
+          {/* ----- FOOTER PROFESIONAL PARA PADDLE ----- */}
           <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-8 mt-10">
             <div className="max-w-7xl mx-auto px-4">
               <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 
-                {/* Branding */}
+                {/* Branding del software */}
                 <div className="text-center md:text-left">
-                  <h4 className="font-bold text-[#9333ea]">SapiSoft Cloud ERP</h4>
-                  <p className="text-xs text-gray-500 mt-1">© 2025 Todos los derechos reservados.</p>
+                  <h4 className="font-bold text-[#9333ea] text-lg">SapiSoft Cloud ERP</h4>
+                  <p className="text-xs text-gray-500 mt-1">El sistema ERP moderno y ágil para empresas.</p>
+                  <p className="text-xs text-gray-400 mt-1">© 2025 Todos los derechos reservados.</p>
                 </div>
 
-                {/* Contacto y Garantía (VITAL PARA PADDLE) */}
+                {/* Info VITAL para aprobación de Paddle */}
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-blue-600 underline">Soporte: electromovil99@gmail.com</p>
-                  <p className="text-sm font-bold text-green-600 mt-1">✓ Garantía de reembolso total de 7 días</p>
+                  <p className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Soporte: electromovil99@gmail.com</p>
+                  <p className="text-sm font-bold text-green-600 mt-2 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm mr-1">verified_user</span>
+                    Garantía de reembolso total de 7 días
+                  </p>
                 </div>
 
-                {/* Métodos de Pago */}
-                <div className="flex items-center space-x-4 grayscale opacity-60">
+                {/* Logos de medios de pago aceptados */}
+                <div className="flex items-center space-x-4 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4" />
                 </div>
               </div>
 
-              {/* Enlaces Legales Rápidos */}
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-center space-x-6 text-xs text-gray-400 font-medium">
-                <button onClick={() => alert("Términos: El uso de SapiSoft implica la aceptación de nuestras políticas de procesamiento de datos.")} className="hover:text-[#9333ea] hover:underline transition-colors">Términos de Servicio</button>
-                <button onClick={() => alert("Privacidad: Sus datos comerciales están protegidos bajo cifrado de extremo a extremo.")} className="hover:text-[#9333ea] hover:underline transition-colors">Política de Privacidad</button>
+              {/* Botones de cumplimiento legal */}
+              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap justify-center gap-6 text-xs text-gray-400 font-medium">
+                <button onClick={() => alert("Términos: Al usar SapiSoft ERP, usted acepta nuestras condiciones de uso de datos comerciales.")} className="hover:text-[#9333ea] hover:underline">Términos de Servicio</button>
+                <button onClick={() => alert("Privacidad: Sus datos están protegidos bajo cifrado AES-256 en nuestros servidores.")} className="hover:text-[#9333ea] hover:underline">Política de Privacidad</button>
+                <button onClick={() => alert("Reembolsos: Si no está satisfecho, solicite su devolución en los primeros 7 días.")} className="hover:text-[#9333ea] hover:underline">Política de Reembolso</button>
               </div>
             </div>
           </footer>
-          {/* ----- FIN DEL PIE DE PÁGINA ----- */}
+          {/* ----- FIN DEL FOOTER ----- */}
+          
         </div>
       </Layout>
     </div>
