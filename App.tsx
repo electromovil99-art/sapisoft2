@@ -46,7 +46,17 @@ import {
 import { INITIAL_NAV_STRUCTURE } from './navigation';
 
 const App: React.FC = () => {
+  // --- ESTADOS ---
   const [session, setSession] = useState<AuthSession | null>(null);
+  const [activeModal, setActiveModal] = useState<'terminos' | 'privacidad' | 'reembolso' | null>(null);
+  const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSyncEnabled, setIsSyncEnabled] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const [heroImage, setHeroImage] = useState<string | undefined>(undefined);
+  const [featureImage, setFeatureImage] = useState<string | undefined>(undefined);
+  
+  // --- DATOS DEL SISTEMA ---
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>([
     { id: 'admin-01', username: 'admin', password: 'admin', fullName: 'Administrador Principal', role: 'ADMIN', active: true, permissions: ['ALL'], industry: 'TECH', companyName: 'SAPISOFT' },
     { id: 'super-01', username: 'superadmin', password: 'admin', fullName: 'SapiSoft Master', role: 'SUPER_ADMIN', active: true, permissions: ['ALL'], industry: 'TECH', companyName: 'SAPISOFT' }
@@ -55,14 +65,7 @@ const App: React.FC = () => {
     { id: 'tenant-01', companyName: 'SAPISOFT', industry: 'TECH', status: 'ACTIVE', subscriptionEnd: '31/12/2025', ownerName: 'Admin', phone: '999999999', planType: 'FULL', baseCurrency: 'PEN' }
   ]);
 
-  const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSyncEnabled, setIsSyncEnabled] = useState(false);
-  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
-  const [heroImage, setHeroImage] = useState<string | undefined>(undefined);
-  const [featureImage, setFeatureImage] = useState<string | undefined>(undefined);
   const [navStructure, setNavStructure] = useState(INITIAL_NAV_STRUCTURE);
-
   const [products, setProducts] = useState<Product[]>(TECH_PRODUCTS);
   const [categories, setCategories] = useState<Category[]>(TECH_CATEGORIES);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -82,48 +85,29 @@ const App: React.FC = () => {
     { id: '2', bankName: 'BBVA', accountNumber: '0011-0123-45-6789', currency: 'PEN', alias: 'YAPE / RECAUDACIÓN', useInSales: true, useInPurchases: false },
     { id: '3', bankName: 'INTERBANK', accountNumber: '200-3001234567', currency: 'USD', alias: 'CUENTA DÓLARES', useInSales: false, useInPurchases: true }
   ]);
-  
-  const [locations, setLocations] = useState<GeoLocation[]>(() => {
-      const generatedDistricts: GeoLocation[] = [];
-      const provinces = MOCK_LOCATIONS.filter(l => l.type === 'PROV');
-      const districts = MOCK_LOCATIONS.filter(l => l.type === 'DIST');
-
-      provinces.forEach(prov => {
-          const hasDistricts = districts.some(d => d.parentId === prov.id);
-          if (!hasDistricts) {
-              generatedDistricts.push(
-                  { id: `DIST-${prov.id}-1`, name: 'CERCADO', type: 'DIST', parentId: prov.id },
-                  { id: `DIST-${prov.id}-2`, name: `${prov.name} (ZONA NORTE)`, type: 'DIST', parentId: prov.id },
-                  { id: `DIST-${prov.id}-3`, name: `${prov.name} (ZONA SUR)`, type: 'DIST', parentId: prov.id }
-              );
-          }
-      });
-      return [...MOCK_LOCATIONS, ...generatedDistricts];
-  });
-
+  const [locations, setLocations] = useState<GeoLocation[]>(MOCK_LOCATIONS);
   const [wsContact, setWsContact] = useState<{ name: string, phone: string, message?: string } | undefined>(undefined);
   const [posCart, setPosCart] = useState<CartItem[]>([]);
   const [posClient, setPosClient] = useState<Client | null>(null);
   const [isCashBoxOpen, setIsCashBoxOpen] = useState(true);
   const [lastClosingCash, setLastClosingCash] = useState(100);
 
-  // Funciones de manejo de datos omitidas para brevedad, pero incluidas en el código real
+  // --- CALLBACKS ---
   const handleManualAdjustment = useCallback((productId: string, type: 'ENTRADA' | 'SALIDA', quantity: number, reason: string) => {
-      const date = new Date().toLocaleDateString('es-PE');
-      const time = new Date().toLocaleTimeString('es-PE');
-      const userName = session?.user.fullName || 'Admin';
-
-      setProducts(currentProducts => {
-          const product = currentProducts.find(p => p.id === productId);
-          if (!product) return currentProducts;
-          const newStock = type === 'ENTRADA' ? product.stock + quantity : product.stock - quantity;
-          const move: StockMovement = {
-              id: 'MV-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-              date, time, productId: product.id, productName: product.name, type, quantity, currentStock: newStock, reference: reason.toUpperCase(), user: userName
-          };
-          setStockMovements(prevMoves => [move, ...prevMoves]);
-          return currentProducts.map(p => p.id === productId ? { ...p, stock: newStock } : p);
-      });
+    const date = new Date().toLocaleDateString('es-PE');
+    const time = new Date().toLocaleTimeString('es-PE');
+    const userName = session?.user.fullName || 'Admin';
+    setProducts(currentProducts => {
+        const product = currentProducts.find(p => p.id === productId);
+        if (!product) return currentProducts;
+        const newStock = type === 'ENTRADA' ? product.stock + quantity : product.stock - quantity;
+        const move: StockMovement = {
+            id: 'MV-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+            date, time, productId: product.id, productName: product.name, type, quantity, currentStock: newStock, reference: reason.toUpperCase(), user: userName
+        };
+        setStockMovements(prevMoves => [move, ...prevMoves]);
+        return currentProducts.map(p => p.id === productId ? { ...p, stock: newStock } : p);
+    });
   }, [session]);
 
   const handleProcessInventorySession = useCallback((sessionData: InventoryHistorySession) => {
@@ -220,35 +204,85 @@ const App: React.FC = () => {
     }
   };
 
-  // ----- FOOTER SOLO PARA EL LOGIN -----
-  const PaddleFooter = () => (
-    <footer className="bg-white border-t border-gray-200 py-6 w-full">
-      <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="text-center md:text-left">
-          <p className="font-bold text-purple-600">SapiSoft ERP Cloud</p>
-          <p className="text-xs text-gray-500">© 2025 Todos los derechos reservados.</p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-semibold text-blue-600">Soporte: electromovil99@gmail.com</p>
-          <p className="text-sm font-bold text-green-600">Garantía de reembolso total de 7 días</p>
-        </div>
-        <div className="flex items-center space-x-4 opacity-70">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
+  // ----- COMPONENTE MODAL LEGAL -----
+  const LegalModal = () => {
+    if (!activeModal) return null;
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl flex flex-col">
+          <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+            <h2 className="text-xl font-bold text-purple-600 capitalize">
+              {activeModal === 'terminos' ? 'Términos de Servicio' : activeModal === 'privacidad' ? 'Política de Privacidad' : 'Política de Reembolso'}
+            </h2>
+            <button onClick={() => setActiveModal(null)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <span className="material-symbols-outlined text-gray-500">close</span>
+            </button>
+          </div>
+          <div className="p-8 overflow-y-auto text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            {activeModal === 'terminos' && (
+              <div className="space-y-4">
+                <p><strong>1. Uso del Software:</strong> SapiSoft ERP se proporciona como una herramienta de gestión administrativa bajo licencia de suscripción.</p>
+                <p><strong>2. Propiedad Intelectual:</strong> Todo el código y diseño es propiedad exclusiva de SapiSoft Cloud.</p>
+                <p><strong>3. Limitación de Responsabilidad:</strong> El usuario es responsable de la exactitud de los datos contables ingresados en el sistema.</p>
+              </div>
+            )}
+            {activeModal === 'privacidad' && (
+              <div className="space-y-4">
+                <p><strong>Seguridad de Datos:</strong> Sus datos comerciales están protegidos con cifrado de grado industrial.</p>
+                <p><strong>Uso de Información:</strong> Solo recolectamos información necesaria para la facturación y soporte técnico.</p>
+                <p><strong>Backups:</strong> Realizamos copias de seguridad diarias automatizadas.</p>
+              </div>
+            )}
+            {activeModal === 'reembolso' && (
+              <div className="space-y-4">
+                <p className="text-lg font-bold text-green-600">Garantía de Satisfacción de 7 Días</p>
+                <p>Ofrecemos un reembolso completo del 100% de su pago si solicita la cancelación durante los primeros 7 días de su suscripción inicial.</p>
+                <p>Para procesar un reembolso, contacte a: <strong>electromovil99@gmail.com</strong></p>
+              </div>
+            )}
+          </div>
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800 text-right">
+            <button onClick={() => setActiveModal(null)} className="bg-purple-600 text-white px-8 py-2 rounded-xl font-bold shadow-lg shadow-purple-200">Entendido</button>
+          </div>
         </div>
       </div>
-      <div className="mt-4 flex justify-center gap-4 text-[10px] text-gray-400">
-        <span className="cursor-pointer hover:underline" onClick={() => alert("Términos aceptados.")}>Términos</span>
-        <span className="cursor-pointer hover:underline" onClick={() => alert("Datos protegidos.")}>Privacidad</span>
-        <span className="cursor-pointer hover:underline" onClick={() => alert("7 días de garantía.")}>Reembolsos</span>
+    );
+  };
+
+  // ----- FOOTER SOLO PARA EL LOGIN -----
+  const PaddleFooter = () => (
+    <footer className="bg-white border-t border-gray-200 py-10 w-full mt-auto">
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="text-center md:text-left">
+          <p className="font-extrabold text-purple-600 text-xl">SapiSoft ERP Cloud</p>
+          <p className="text-xs text-gray-500">© 2025 Todos los derechos reservados.</p>
+        </div>
+        <div className="text-center bg-blue-50 p-4 rounded-2xl border border-blue-100">
+          <p className="text-sm font-bold text-blue-700">Soporte: electromovil99@gmail.com</p>
+          <p className="text-sm font-bold text-green-600 mt-1 flex items-center justify-center">
+            <span className="material-symbols-outlined text-sm mr-1">verified_user</span>
+            Garantía de reembolso total de 7 días
+          </p>
+        </div>
+        <div className="flex items-center space-x-6">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 grayscale hover:grayscale-0 transition-all" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-8 grayscale hover:grayscale-0 transition-all" />
+        </div>
+      </div>
+      <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap justify-center gap-10 text-[11px] text-gray-400 font-bold uppercase tracking-widest">
+        <button onClick={() => setActiveModal('terminos')} className="hover:text-purple-600 transition-colors underline decoration-purple-100">Términos de Servicio</button>
+        <button onClick={() => setActiveModal('privacidad')} className="hover:text-purple-600 transition-colors underline decoration-purple-100">Privacidad</button>
+        <button onClick={() => setActiveModal('reembolso')} className="hover:text-purple-600 transition-colors underline decoration-purple-100">Reembolsos</button>
       </div>
     </footer>
   );
 
-  // SI NO HAY SESIÓN: Muestra Login + Footer
+  // ----- RENDER LÓGICO -----
+
+  // SI NO HAY SESIÓN: Muestra Login + Footer + Modales
   if (!session) return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col justify-center">
         <LoginScreen 
           onLogin={u => {
             const tenant = tenants.find(t => t.companyName === u.companyName);
@@ -260,6 +294,7 @@ const App: React.FC = () => {
         />
       </div>
       <PaddleFooter /> 
+      <LegalModal />
     </div>
   );
 
@@ -277,6 +312,7 @@ const App: React.FC = () => {
           {renderCurrentView()}
         </div>
       </Layout>
+      <LegalModal />
     </div>
   );
 };
